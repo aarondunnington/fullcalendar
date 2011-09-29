@@ -2,6 +2,9 @@
 FullCalendar - Full-sized drag & drop event calendar
 ====================================================
 
+Working branch for agenda resource view:
+http://code.google.com/p/fullcalendar/issues/detail?id=490
+  
 Development and testing
 -----------------------
 
