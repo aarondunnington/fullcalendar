@@ -344,6 +344,26 @@ function getSkinCss(event, opt) {
 	return statements.join(';');
 }
 
+function getSkinCssWithResource(event, resource) {
+
+	var source = event.source || {};
+	var eventColor = resource.color;
+	var backgroundColor = eventColor;
+	var borderColor = eventColor;
+	var textColor = resource.textColor;
+	var statements = [];
+	if (backgroundColor) {
+		statements.push('background-color:' + backgroundColor);
+	}
+	if (borderColor) {
+		statements.push('border-color:' + borderColor);
+	}
+	if (textColor) {
+		statements.push('color:' + textColor);
+	}
+	return statements.join(';');
+}
+
 
 function applyAll(functions, thisObj, args) {
 	if ($.isFunction(functions)) {

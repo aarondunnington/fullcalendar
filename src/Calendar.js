@@ -29,6 +29,8 @@ function Calendar(element, options, eventSources) {
 	t.option = option;
 	t.trigger = trigger;
 	
+	t.getResources = function() { return options.resources; }
+	t.setResources = function(resources) { options.resources = resources; render(false, true); }
 	
 	// imports
 	EventManager.call(t, options, eventSources);
@@ -38,6 +40,8 @@ function Calendar(element, options, eventSources) {
 	
 	// locals
 	var _element = element[0];
+	var resourceList;
+	var resourceListElement;
 	var header;
 	var headerElement;
 	var content;
@@ -53,6 +57,7 @@ function Calendar(element, options, eventSources) {
 	var events = [];
 	var _dragElement;
 	
+
 	
 	
 	/* Main Rendering
@@ -62,14 +67,14 @@ function Calendar(element, options, eventSources) {
 	setYMD(date, options.year, options.month, options.date);
 	
 	
-	function render(inc) {
+	function render(inc, rebuildSkeleton) {
 		if (!content) {
 			initialRender();
 		}else{
 			calcSize();
 			markSizesDirty();
 			markEventsDirty();
-			renderView(inc);
+			renderView(inc, rebuildSkeleton);
 		}
 	}
 	
@@ -85,11 +90,22 @@ function Calendar(element, options, eventSources) {
 		}
 		content = $("<div class='fc-content' style='position:relative'/>")
 			.prependTo(element);
+			
+		// Render out the resource list before the Calendar (not applicable to all views?)
+		resourceList = new ResourceList(t, options);
+		resourceListElement = resourceList.render();
+		if(resourceListElement) {
+			element.prepend(resourceListElement);
+		}
+			
 		header = new Header(t, options);
 		headerElement = header.render();
 		if (headerElement) {
 			element.prepend(headerElement);
 		}
+		
+
+		
 		changeView(options.defaultView);
 		$(window).resize(windowResize);
 		// needed for IE in a 0x0 iframe, b/c when it is resized, never triggers a windowResize
@@ -187,7 +203,7 @@ function Calendar(element, options, eventSources) {
 	
 	
 	
-	function renderView(inc) {
+	function renderView(inc, rebuildSkeleton) {
 		if (elementVisible()) {
 			ignoreWindowResize++; // because renderEvents might temporarily change the height before setSize is reached
 
@@ -198,9 +214,9 @@ function Calendar(element, options, eventSources) {
 			}
 			
 			var forceEventRender = false;
-			if (!currentView.start || inc || date < currentView.start || date >= currentView.end) {
+			if (!currentView.start || inc || date < currentView.start || date >= currentView.end || rebuildSkeleton) {
 				// view must render an entire new date range (and refetch/render events)
-				currentView.render(date, inc || 0); // responsible for clearing events
+				currentView.render(date, inc || 0, rebuildSkeleton); // responsible for clearing events
 				setSize(true);
 				forceEventRender = true;
 			}

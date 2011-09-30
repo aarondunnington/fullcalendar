@@ -19,6 +19,7 @@ css('main.css');
 css('common/common.css');
 css('basic/basic.css');
 css('agenda/agenda.css');
+css('resources/resource.css');
 cssprint('common/print.css');
 
 if (!legacy) {
@@ -55,6 +56,11 @@ js('agenda/AgendaWeekView.js');
 js('agenda/AgendaDayView.js');
 js('agenda/AgendaView.js');
 js('agenda/AgendaEventRenderer.js');
+
+js('resources/ResourceDayView.js');
+js('resources/ResourceView.js');
+js('resources/ResourceList.js');
+js('resources/ResourceEventRenderer.js');
 
 js('common/View.js');
 js('common/DayEventRenderer.js');

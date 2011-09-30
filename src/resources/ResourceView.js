@@ -10,7 +10,7 @@ setDefaults({
 		agenda: 'h:mm{ - h:mm}'
 	},
 	dragOpacity: {
-		agenda: .5
+		resource: .5
 	},
 	minTime: 0,
 	maxTime: 24
@@ -21,12 +21,12 @@ setDefaults({
 // TODO: test liquid width, especially in IE6
 
 
-function AgendaView(element, calendar, viewName) {
+function ResourceView(element, calendar, viewName) {
 	var t = this;
 	
 	
 	// exports
-	t.renderAgenda = renderAgenda;
+	t.renderResourceView = renderResourceView;
 	t.setWidth = setWidth;
 	t.setHeight = setHeight;
 	t.beforeHide = beforeHide;
@@ -53,6 +53,7 @@ function AgendaView(element, calendar, viewName) {
 	t.getSlotHeight = function() { return slotHeight };
 	t.defaultSelectionEnd = defaultSelectionEnd;
 	t.renderDayOverlay = renderDayOverlay;
+	t.renderResourceOverlay = renderResourceOverlay;
 	t.renderSelection = renderSelection;
 	t.clearSelection = clearSelection;
 	t.reportDayClick = reportDayClick; // selection mousedown hack
@@ -64,7 +65,7 @@ function AgendaView(element, calendar, viewName) {
 	View.call(t, element, calendar, viewName);
 	OverlayManager.call(t);
 	SelectionManager.call(t);
-	AgendaEventRenderer.call(t);
+	ResourceEventRenderer.call(t);
 	var opt = t.opt;
 	var trigger = t.trigger;
 	var clearEvents = t.clearEvents;
@@ -75,7 +76,6 @@ function AgendaView(element, calendar, viewName) {
 	var daySelectionMousedown = t.daySelectionMousedown;
 	var slotSegHtml = t.slotSegHtml;
 	var formatDate = calendar.formatDate;
-	
 	
 	// locals
 	
@@ -122,6 +122,9 @@ function AgendaView(element, calendar, viewName) {
 	var minMinute, maxMinute;
 	var colFormat;
 	
+	var resources;
+	var resourceFingerprint;
+	
 
 	
 	/* Rendering
@@ -131,9 +134,30 @@ function AgendaView(element, calendar, viewName) {
 	disableTextSelection(element.addClass('fc-agenda'));
 	
 	
-	function renderAgenda(c) {
-		colCnt = c;
+	function renderResourceView(rebuildSkeleton) {
 		updateOptions();
+		
+		resources = calendar.getResources();
+		colCnt = resources.length;
+		
+		// calc fingerprint
+		var oldFingerprint = resourceFingerprint,
+		    ids;
+		ids = [];
+		$.each(resources, function(i,r) {
+		    ids.push(r.id);
+		});
+		resourceFingerprint = ids.join(',');
+		
+		// rebuild the skeleton?
+		if (dayTable && slotLayer && (rebuildSkeleton || oldFingerprint != resourceFingerprint)) {
+		    dayTable.remove();
+		    slotLayer.remove();
+		    
+		    dayTable = false;
+		    slotLayer = false;
+		}
+		
 		if (!dayTable) {
 			buildSkeleton();
 		}else{
@@ -311,9 +335,9 @@ function AgendaView(element, calendar, viewName) {
 		var date;
 		var today = clearTime(new Date());
 		for (i=0; i<colCnt; i++) {
-			date = colDate(i);
+			date = colDate(0); 	// PA massive hack of existing code, but this needs to be changed to support working hours anyway!
 			headCell = dayHeadCells.eq(i);
-			headCell.html(formatDate(date, colFormat));
+			headCell.html(resources[i].name);
 			bodyCell = dayBodyCells.eq(i);
 			if (+date == +today) {
 				bodyCell.addClass(tm + '-state-highlight fc-today');
@@ -476,6 +500,18 @@ function AgendaView(element, calendar, viewName) {
 				renderCellOverlay(0, startCol, 0, endCol-1)
 			);
 		}
+	}
+	
+	// PA TODO - This function has to be updated to use something other than index!
+	function renderResourceOverlay(col, refreshCoordinateGrid) {
+		if (refreshCoordinateGrid) {
+			coordinateGrid.build();
+		}
+		
+		var startCol = Math.max(0, col),
+		    endCol = Math.min(colCnt, col);
+        
+		dayBind(renderCellOverlay(0,startCol, 0, endCol));
 	}
 	
 	
@@ -795,7 +831,12 @@ function AgendaView(element, calendar, viewName) {
 		var cell = hoverListener.stop();
 		clearOverlays();
 		if (cell) {
-			trigger('drop', _dragElement, cellDate(cell), cellIsAllDay(cell), ev, ui, false);
+		    var resource = resources[cell.col];
+		    var dDrop = cellDate(cell);
+		    var dViewing = t.visStart;
+		    setYMD(dDrop, dViewing.getFullYear(), dViewing.getMonth(), dViewing.getDate());
+		    
+			trigger('drop', _dragElement, dDrop, cellIsAllDay(cell), ev, ui, resource);
 		}
 	}
 

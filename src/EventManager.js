@@ -350,7 +350,10 @@ function EventManager(options, _sources) {
 		}else{
 			event.className = [];
 		}
+		
 		// TODO: if there is no start date, return false to indicate an invalid event
+		
+		associateResourceWithEvent(event);
 	}
 	
 	
@@ -383,6 +386,28 @@ function EventManager(options, _sources) {
 	function getSourcePrimitive(source) {
 		return ((typeof source == 'object') ? (source.events || source.url) : '') || source;
 	}
-
-
+	
+	/* Resources
+	------------------------------------------------------------------------------*/
+	
+	function associateResourceWithEvent(event) {
+		var resources = options.resources,
+		    i = 0;
+		
+		if(!event.resourceId) {
+            return;
+        }
+        
+        $.each(
+            resources,
+        	function( intIndex, resource ){
+    			if(resource.id == event.resourceId) {
+					event.resource = resource;
+					event.resource._col = i;
+					delete event.resourceId;
+				}
+				i++;
+            }
+        );
+	}
 }
