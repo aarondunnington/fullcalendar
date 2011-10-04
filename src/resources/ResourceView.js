@@ -7,7 +7,7 @@ setDefaults({
 	defaultEventMinutes: 120,
 	axisFormat: 'h(:mm)tt',
 	timeFormat: {
-		agenda: 'h:mm{ - h:mm}'
+		resource: 'h:mm{ - h:mm}'
 	},
 	dragOpacity: {
 		resource: .5
