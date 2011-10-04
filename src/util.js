@@ -345,12 +345,21 @@ function getSkinCss(event, opt) {
 }
 
 function getSkinCssWithResource(event, resource) {
-
-	var source = event.source || {};
-	var eventColor = resource.color;
-	var backgroundColor = eventColor;
-	var borderColor = eventColor;
-	var textColor = resource.textColor;
+  var eventColor = event.color;
+	var resourceColor = resource.color;
+	var backgroundColor =
+		event.backgroundColor ||
+		eventColor ||
+		resource.backgroundColor ||
+		resourceColor
+	var borderColor =
+		event.borderColor ||
+		eventColor ||
+		resource.borderColor ||
+		resourceColor
+	var textColor =
+		event.textColor ||
+    resource.textColor
 	var statements = [];
 	if (backgroundColor) {
 		statements.push('background-color:' + backgroundColor);
