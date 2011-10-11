@@ -59,7 +59,7 @@ function ResourceView(element, calendar, viewName) {
 	t.reportDayClick = reportDayClick; // selection mousedown hack
 	t.dragStart = dragStart;
 	t.dragStop = dragStop;
-	
+	t.scrollToHour = scrollToHour;
 	
 	// imports
 	View.call(t, element, calendar, viewName);
@@ -418,9 +418,13 @@ function ResourceView(element, calendar, viewName) {
 
 
 	function resetScroll() {
-		var d0 = zeroDate();
+    scrollToHour(opt('firstHour'));
+	}
+	
+	function scrollToHour(hour) {
+	  var d0 = zeroDate();
 		var scrollDate = cloneDate(d0);
-		scrollDate.setHours(opt('firstHour'));
+		scrollDate.setHours(hour);
 		var top = timePosition(d0, scrollDate) + 1; // +1 for the border
 		function scroll() {
 			slotScroller.scrollTop(top);
@@ -460,16 +464,28 @@ function ResourceView(element, calendar, viewName) {
 	function slotClick(ev) {
 		if (!opt('selectable')) { // if selectable, SelectionManager will worry about dayClick
 			var col = Math.min(colCnt-1, Math.floor((ev.pageX - dayTable.offset().left - axisWidth) / colWidth));
-			var date = colDate(col);
+			var date = colDate(0); // resource view is single-day currently
 			var rowMatch = this.parentNode.className.match(/fc-slot(\d+)/); // TODO: maybe use data
 			if (rowMatch) {
 				var mins = parseInt(rowMatch[1]) * opt('slotMinutes');
 				var hours = Math.floor(mins/60);
 				date.setHours(hours);
 				date.setMinutes(mins%60 + minMinute);
-				trigger('dayClick', dayBodyCells[col], date, false, ev);
+				
+				var resource = resources[col];
+				if (resource) {
+				  trigger('resourceClick', dayBodyCells[col], resource, date, false, ev);
+				}else{
+				  trigger('dayClick', dayBodyCells[col], date, false, ev);
+				}
 			}else{
-				trigger('dayClick', dayBodyCells[col], date, true, ev);
+			  
+			  var resource = resources[col];
+				if (resource) {
+				  trigger('resourceClick', dayBodyCells[col], resource, date, true, ev);
+			  }else {
+			    trigger('dayClick', dayBodyCells[col], date, true, ev);
+			  }
 			}
 		}
 	}

@@ -28,7 +28,8 @@ function Calendar(element, options, eventSources) {
 	t.getView = getView;
 	t.option = option;
 	t.trigger = trigger;
-	
+	t.scrollToHour = scrollToHour;
+
 	t.getResources = function() { return options.resources; }
 	t.setResources = function(resources) { options.resources = resources; render(false, true); }
 	
@@ -186,7 +187,8 @@ function Calendar(element, options, eventSources) {
 			}
 			header.activateButton(newViewName);
 			
-			renderView(); // after height has been set, will make absoluteViewElement's position=relative, then set to null
+			// HACK: resource changes amongst views require new skeleton, perhaps need to track resource dirty state in Calendar?
+			renderView(false, true); // after height has been set, will make absoluteViewElement's position=relative, then set to null
 			
 			content.css('overflow', '');
 			if (oldView) {
@@ -482,9 +484,13 @@ function Calendar(element, options, eventSources) {
 			);
 		}
 	}
-	
-	
-	
+
+	function scrollToHour(hour) {
+	  if (currentView) {
+	    currentView.scrollToHour(hour);
+	  }
+	}
+
 	/* External Dragging
 	------------------------------------------------------------------------*/
 	
